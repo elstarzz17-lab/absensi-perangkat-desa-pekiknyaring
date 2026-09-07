@@ -19,7 +19,11 @@ export async function GET(req: NextRequest) {
     const today = getTanggalJakarta()
     const where: {
       tanggal?: { gte?: string; lte?: string }
-      perangkat?: { OR?: Array<{ nama?: { contains: string } }, { nipd?: { contains: string } }, { jabatan?: { contains: string } }> }
+      perangkat?: {
+        OR?: Array<
+          { nama?: { contains: string } } | { nipd?: { contains: string } } | { jabatan?: { contains: string } }
+        >
+      }
     } = {}
 
     if (dari || sampai) {

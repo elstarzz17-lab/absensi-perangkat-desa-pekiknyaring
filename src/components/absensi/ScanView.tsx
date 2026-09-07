@@ -328,10 +328,7 @@ export default function ScanView({ refreshToken }: ScanViewProps) {
         const konfig = { fps: 10, qrbox: { width: 230, height: 230 } }
         const saatTerbaca = (decodedText: string) => prosesScan(decodedText, 'SCAN')
 
-        scanner = new Html5Qrcode('qr-reader-region', { verbose: false })
-        scannerRef.current = scanner
-
-        // 1) Tentukan kamera yang dipakai: pilihan pengguna > kamera tersimpan
+        // 2) Tentukan kamera yang dipakai: pilihan pengguna > kamera tersimpan
         //    (yang masih terpasang) > kamera belakang (HP) > kamera pertama.
         let pilihan = deviceId
         const kamera = await denganLogKameraDitekan(() => Html5Qrcode.getCameras())
@@ -357,21 +354,26 @@ export default function ScanView({ refreshToken }: ScanViewProps) {
           pilihan = (belakang ?? daftar[0]).id
         }
 
-        // 2) Nyalakan dengan RANTAI CADANGAN: ID persis > ID longgar > kamera
+        // 3) Nyalakan dengan RANTAI CADANGAN: ID persis > ID longgar > kamera
         //    belakang (facingMode environment) > kamera bawaan. Bila pilihan
         //    utama gagal (kamera dipindai, perangkat berubah, atau ID basi),
         //    percobaan berikutnya otomatis dijalankan — kamera tetap menyala
         //    alih-alih menampilkan eror.
+        //    PENTING: setiap percobaan memakai INSTANSI Html5Qrcode baru,
+        //    karena instansi yang gagal start() terjebak pada state internal
+        //    ("Cannot transition to a new state") dan tidak bisa dipakai ulang.
         const rantai: MediaTrackConstraints[] = [
           { deviceId: { exact: pilihan! } },
           { deviceId: pilihan! },
-          { facingMode: { ideal: 'environment' } },
+          { facingMode: 'environment' },
           { facingMode: 'user' },
         ]
         let terakhirError: unknown = null
         let menyala = false
         for (const coba of rantai) {
           try {
+            scanner = new Html5Qrcode('qr-reader-region', { verbose: false })
+            scannerRef.current = scanner
             await denganLogKameraDitekan(() =>
               scanner!.start(coba, konfig, saatTerbaca, () => {})
             )
@@ -379,21 +381,33 @@ export default function ScanView({ refreshToken }: ScanViewProps) {
             break
           } catch (e) {
             terakhirError = e
-            // Bersihkan sisa stream percobaan gagal sebelum mencoba berikutnya
+            // Bersihkan sisa stream & DOM percobaan gagal agar percobaan
+            // berikutnya mulai dari kondisi bersih
             try {
               await scanner!.stop()
             } catch {
               // scanner memang belum sempat menyala — aman diabaikan
             }
+            try {
+              scanner!.clear()
+            } catch {
+              // state internal mungkin macet — abaikan
+            }
+            try {
+              const el = document.getElementById('qr-reader-region')
+              if (el) el.innerHTML = ''
+            } catch {
+              // abaikan
+            }
           }
         }
-        if (!menyala) {
+        if (!menyala || !scanner) {
           throw terakhirError ?? new Error('Kamera gagal diaktifkan')
         }
 
         setIsScanning(true)
 
-        // 3) Selaraskan ID kamera yang BENAR-BENAR menyala (bisa berbeda dari
+        // 4) Selaraskan ID kamera yang BENAR-BENAR menyala (bisa berbeda dari
         //    pilihan bila rantai cadangan aktif), simpan & tampilkan di pemilih.
         let idMenyala = pilihan!
         try {
@@ -713,7 +727,7 @@ export default function ScanView({ refreshToken }: ScanViewProps) {
             ) : (
               <div className="flex flex-col gap-2">
                 <Button
-                  onClick={startCamera}
+                  onClick={() => startCamera()}
                   disabled={starting}
                   className="w-full h-11 bg-brand-green-800 hover:bg-brand-green-700 text-white font-semibold"
                 >
