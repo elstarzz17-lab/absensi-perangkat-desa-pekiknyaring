@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Admin Desa
+model Admin {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+  nama     String @default("Administrator")
+}
+
+// Perangkat Desa
+model Perangkat {
+  id          Int       @id @default(autoincrement())
+  nipd        String    @unique // NIPD-001 s/d NIPD-012
+  nama        String
+  nik         String?   @unique
+  kecamatan   String    @default("Pondok Kelapa")
+  desa        String    @default("Pekik Nyaring")
+  ttl         String? // Tempat Tanggal Lahir
+  jenisKelamin String   @default("Laki-laki")
+  pendidikan  String? // Pendidikan terakhir
+  nomorSk     String? // Nomor SK
+  jabatan     String
+  status      String    @default("AKTIF") // AKTIF | PASIF
+  keterangan  String? // Keterangan status
+  createdAt   DateTime  @default(now())
+  absensi     Absensi[]
+}
+
+// Record Absensi (1 baris per perangkat per hari)
+model Absensi {
+  id          Int       @id @default(autoincrement())
+  perangkatId Int
+  perangkat   Perangkat @relation(fields: [perangkatId], references: [id], onDelete: Cascade)
+  tanggal     String // YYYY-MM-DD
+  jamDatang   String? // HH:mm:ss
+  jamPulang   String? // HH:mm:ss
+  kategori    String // AKTIF (datang & pulang) | PASIF (datang saja)
+  metode      String    @default("SCAN") // SCAN | MANUAL
+  latitude    Float? // Lokasi GPS saat absen datang
+  longitude   Float?
+  akurasi     Float? // Akurasi GPS dalam meter
+  latPulang   Float? // Lokasi GPS saat absen pulang
+  lonPulang   Float?
+  akurasiPulang Float?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([perangkatId, tanggal])
+}

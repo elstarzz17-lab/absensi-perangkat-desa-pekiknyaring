@@ -1,0 +1,72 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+local-*
+.claude
+.z-ai-config
+*.log
+dev.log
+dev.out.log
+test
+prompt
+
+server.log
+# Skills directory
+/skills/
+
+# =============================================
+# DATA PRIBADI — JANGAN SAMPAI IKUT KE GITHUB
+# Database berisi NIK & data pribadi perangkat desa
+/db/
+# Seed asli berisi data NIK perangkat desa — HANYA seed-admin.mjs yang diunggah
+/scripts/*
+!/scripts/seed-admin.mjs
+# File kerja lokal lainnya
+tool-results/
+download/
+upload/
+mini-services/
+examples/
+agent-ctx/
+.zscripts/
+Caddyfile
+bun.lock
