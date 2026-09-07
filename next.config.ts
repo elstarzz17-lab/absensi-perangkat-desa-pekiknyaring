@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
+  // Ikutkan template database (dipakai bootstrap-db.ts saat deploy ke hosting baru)
+  outputFileTracingIncludes: {
+    "/**": ["./prisma/template.db"],
+  },
 };
 
 export default nextConfig;

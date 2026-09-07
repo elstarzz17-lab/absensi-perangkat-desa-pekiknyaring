@@ -37,8 +37,8 @@ Prasyarat: **Node.js 18+** (atau Bun).
 
 ```bash
 # 1. Unduh kode
-git clone https://github.com/USERNAME/absensi-qr-desa.git
-cd absensi-qr-desa
+git clone https://github.com/elstarzz17-lab/absensi-perangkat-desa-pekiknyaring.git
+cd absensi-perangkat-desa-pekiknyaring
 
 # 2. Pasang dependensi
 npm install
@@ -91,20 +91,17 @@ Ingin logo berbeda? Taruh file gambar di folder `public/` lalu isi
 
 ## Publish ke GitHub
 
-> **Penting**: database SQLite & seed berisi **NIK (data pribadi)** sudah
-> dikecualikan lewat `.gitignore` — tidak akan ikut terunggah. Data pribadi
-> penduduk tetap aman di komputer/server Anda.
+Repositori resmi: **https://github.com/elstarzz17-lab/absensi-perangkat-desa-pekiknyaring**
+
+> **Penting**: database SQLite berisi **NIK (data pribadi)** sudah dikecualikan
+> lewat `.gitignore` — tidak akan ikut terunggah. Data pribadi penduduk tetap
+> aman di komputer/server Anda.
 
 ```bash
-# 1. Buat repositori kosong baru di github.com (tanpa README bawaan)
-
-# 2. Hubungkan & unggah
-git remote add origin https://github.com/USERNAME/absensi-qr-desa.git
-git push -u origin main
+git add .
+git commit -m "deskripsi perubahan"
+git push
 ```
-
-Nama repositori bebas — bisa diganti kapan saja di pengaturan repositori,
-aplikasi tidak terpengaruh.
 
 ## Deploy Online
 
@@ -123,16 +120,26 @@ DATABASE_URL="file:../db/custom.db" AUTH_SECRET="rahasia-panjang" \
 Arahkan domain (mis. `absensi.desaXX.id`) lewat Nginx reverse proxy ke
 port aplikasi, lalu pasang SSL gratis dengan Certbot (Let's Encrypt).
 
-### Pilihan B — Vercel (praktis untuk demo/ujicoba)
+### Pilihan B — Vercel (sekali klik, langsung online)
 
-1. Push ke GitHub, lalu import repo di [vercel.com](https://vercel.com)
-2. Isi Environment Variables dari `.env.example` (`DATABASE_URL`,
-   `AUTH_SECRET`, `NEXT_PUBLIC_*`)
-3. Deploy
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Felstarzz17-lab%2Fabsensi-perangkat-desa-pekiknyaring&project-name=absensi-pekik-nyaring&env=DATABASE_URL,AUTH_SECRET,NEXT_PUBLIC_NAMA_DESA,NEXT_PUBLIC_KECAMATAN,NEXT_PUBLIC_KABUPATEN,NEXT_PUBLIC_NAMA_PEMERINTAH,NEXT_PUBLIC_LOGO&DATABASE_URL=file%3A%2Ftmp%2Fcustom.db&NEXT_PUBLIC_NAMA_DESA=Pekik%20Nyaring&NEXT_PUBLIC_KECAMATAN=Pondok%20Kelapa&NEXT_PUBLIC_KABUPATEN=Bengkulu%20Tengah&NEXT_PUBLIC_NAMA_PEMERINTAH=Pemerintah%20Desa%20Pekik%20Nyaring&NEXT_PUBLIC_LOGO=%2Flogo-kabupaten-bengkulu-tengah.png)
 
-**Catatan**: filesystem Vercel bersifat sementara (serverless), sehingga
-**data SQLite bisa hilang saat redeploy** — cocok untuk demo, tidak untuk
-data absensi resmi. Untuk produksi gunakan Pilihan A, atau pindahkan
+1. Klik tombol di atas → login ke Vercel **memakai akun GitHub**
+2. Semua Environment Variables sudah terisi otomatis — tinggal klik **Deploy**
+3. Tunggu ±2 menit → situs online di `https://absensi-pekik-nyaring.vercel.app`
+   (HTTPS otomatis — kamera scanner langsung bisa dipakai)
+4. Masuk dengan `admindesapekiknyaring` / `admindesa123`, lalu segera ganti
+   kata sandi & isi `AUTH_SECRET` sendiri di Project Settings → Environment
+   Variables
+
+Jangan lupa isi `AUTH_SECRET` dengan teks acak panjang (mis. hasil
+`openssl rand -hex 32`) di Settings → Environment Variables, lalu redeploy.
+
+**Catatan penting**: filesystem Vercel bersifat sementara (serverless),
+sehingga **data absensi pada mode Vercel bisa hilang kapan saja** — tabel &
+akun admin dibuat otomatis saat server nyala (lihat
+`src/lib/bootstrap-db.ts`), tetapi cocok hanya untuk **demo/ujicoba**, bukan
+data resmi desa. Untuk data permanen gunakan Pilihan A (VPS), atau pindahkan
 database ke penyedia SQL (Prisma tinggal ganti `provider` di
 `prisma/schema.prisma`).
 
